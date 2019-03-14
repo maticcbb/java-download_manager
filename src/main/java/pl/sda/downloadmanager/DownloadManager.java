@@ -6,30 +6,40 @@ import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class DownloadManager {
 
     private Path downloadDirectory;
     private HttpClient httpClient;
+    private Collection<DownloadEventListener> listeners;
 
     public DownloadManager(Path downloadDirectory) {
         this.downloadDirectory = downloadDirectory;
         httpClient = HttpClientBuilder.create().build();
+        listeners = new LinkedList<>();
     }
 
 
     public void download(URL fileUrl) {
+        listeners.forEach(listener -> listener.onStart(fileUrl));
         try {
             String file = exctractFileName(fileUrl);
 
             try (InputStream fileInputStream = openInputStream(fileUrl)) {
                 Files.copy(fileInputStream, downloadDirectory.resolve(file));
+                listeners.forEach(listener -> listener.onFinish(fileUrl));
             }
 
         } catch (IOException | URISyntaxException e) {
@@ -55,10 +65,31 @@ public class DownloadManager {
      * @throws IOException
      */
     public void downloadAll(Path file) throws IOException {
+        ExecutorService executorService = Executors.newCachedThreadPool();
+
         List<String> lines = Files.readAllLines(file, Charset.forName("UTF-8"));
         for (String line : lines) {
-            download(new URL(line));
+            executorService.submit(() -> download(wrapInUrl(line)));
+        }
+
+        try {
+            executorService.shutdown();
+            executorService.awaitTermination(1, TimeUnit.HOURS);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
+    private URL wrapInUrl(String line) {
+        try {
+            return new URL(line);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void registerListener(DownloadEventListener listener) {
+        listeners.add(listener);
+
+    }
 }
