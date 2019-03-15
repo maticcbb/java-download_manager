@@ -8,6 +8,10 @@ import java.util.Properties;
 
 public class DownloadManagerFactory {
 
+    /**
+     * Set config.properties file in {@code DownloadManager}.
+     * @return DownloadManager
+     */
     public static DownloadManager createDownloadManager() {
         Properties properties = new Properties();
 

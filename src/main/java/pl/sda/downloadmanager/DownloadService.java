@@ -9,6 +9,11 @@ public class DownloadService {
 
     private DownloadManager downloadManager;
 
+    /**
+     * Anonymous method witch set output of the {@code listeners}.
+     * Listeners run when file starts downloading and after its finished.
+     * @param downloadManager
+     */
     public DownloadService(DownloadManager downloadManager) {
         this.downloadManager = downloadManager;
         this.downloadManager.registerListener(new DownloadEventListener() {

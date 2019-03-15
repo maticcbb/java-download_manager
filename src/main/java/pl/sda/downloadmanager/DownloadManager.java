@@ -32,6 +32,12 @@ public class DownloadManager {
     }
 
 
+    /**
+     * Use this method to download single file from source URL {@code fileUrl}.
+     * When download started {@code listeners} print out when file downloading is started and after its finished.
+     *
+     * @param fileUrl a URL path to file we want to download
+     */
     public void download(URL fileUrl) {
         listeners.forEach(listener -> listener.onStart(fileUrl));
         try {
@@ -59,7 +65,10 @@ public class DownloadManager {
     }
 
     /**
-     * Use this method to download multiple files at once. Each line in the source {@code file} represents a single URL to the file that will be downloaded. This method behaves exactly as {@link #download(URL)} that would be invoked for each line in the source file.
+     * Use this method to download multiple files at once.
+     * Each line in the source {@code file} represents a single URL to the file that will be downloaded.
+     * This method behaves exactly as {@link #download(URL)} that would be invoked for each line in the source file.
+     * With {@code newCachedThreadPool()} method, every file is working on other thread.
      *
      * @param file a source file in UTF-8 encoding, each line in this file is a URL to the remote file that we want to download
      * @throws IOException
@@ -80,6 +89,11 @@ public class DownloadManager {
         }
     }
 
+    /**
+     * Wrap each line in our source file of hyperlinks into URLS.
+     * @param line
+     * @return
+     */
     private URL wrapInUrl(String line) {
         try {
             return new URL(line);
