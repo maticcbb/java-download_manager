@@ -7,11 +7,14 @@ public class Main {
         if (args.length == 0) {
             System.out.println("Usage: <url>");
             System.out.println("Usage: downloadAll <path-to-source-file>");
+            System.out.println("Usage: copyToDrive <url>");
             System.exit(0);
         }
 
         if (args[0].equals("downloadAll")) {
             downloadService.downloadAll(args[1]);
+        } else if(args[0].equals("copyToDrive")) {
+            downloadService.copyToDrive(args[1]);
         } else {
             downloadService.download(args[0]);
         }
