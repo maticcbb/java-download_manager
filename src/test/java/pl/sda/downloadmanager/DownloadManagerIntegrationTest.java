@@ -4,8 +4,9 @@ import org.eclipse.jetty.server.Server;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import pl.sda.downloadmanager.gdrive.DriveService;
 
-import java.io.File;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -18,10 +19,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DownloadManagerIntegrationTest {
 
     private Server server;
+    private DriveService driveService;
 
     @AfterEach
     void tearDown() throws Exception {
         server.stop();
+        driveService = Mockito.mock(DriveService.class);
     }
 
     @Test
@@ -32,7 +35,8 @@ public class DownloadManagerIntegrationTest {
         server = JettyEmbeddedServer.prepareServerWithResponse(testFileContent, 8080);
         server.start();
         Path downloadDir = Files.createTempDirectory("files");
-        DownloadManager downloadManager = new DownloadManager(downloadDir);
+        DownloadManager downloadManager = new DownloadManager(downloadDir,
+                driveService);
         URL url = new URL("http://localhost:8080/test-file.txt");
 
         //when
@@ -49,7 +53,7 @@ public class DownloadManagerIntegrationTest {
         server = JettyEmbeddedServer.prepareServerWithResponse("anyContent", 8081);
         server.start();
         Path downloadDir = Files.createTempDirectory("files");
-        DownloadManager downloadManager = new DownloadManager(downloadDir);
+        DownloadManager downloadManager = new DownloadManager(downloadDir, driveService);
         Path source = Files.createTempFile("source", ".txt");
         List<String> urls = Arrays.asList(
                 "http://localhost:8081/test-file.txt"
